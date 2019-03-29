@@ -1,0 +1,184 @@
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
+<script src="https://cdn.pubnub.com/sdk/javascript/pubnub.4.23.0.js"></script>
+<!------ Include the above in your HEAD tag ---------->
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    
+  </head>
+
+  <style>
+    .center {
+        /* this will keep the content center */
+        position: absolute;
+        right: 0;
+        left: 0;
+        margin: auto;
+    }
+
+    .msg-group {
+    	position: absolute;
+        max-width: 720px;
+        height: 92%;
+        overflow-y: scroll;  /*if the content beyond width and height, use the scrollbar*/
+    }
+
+    .card {
+        padding: 10px 0 10px 0;
+    }
+
+    .input-group {
+    	position: absolute;
+        height: 8%;
+    	bottom: 0;
+    }
+
+    .btn {
+        height:100%;
+    }
+    textarea {
+        resize: none;
+    }
+  </style>
+
+  <body>
+
+    <div class="container-flude">
+    	
+                <div class="msg-group center">                 
+                   
+                </div>
+                
+     
+
+               <div class="input-group mb-3">
+                  <div class="input-group-prepend">
+                    <button class="btn btn-secondary" type="button">Chirp</button>
+                  </div>
+                    <textarea id="input-box" class="form-control" rows="1" placeholder="Say something..."></textarea>
+                  <div class="input-group-append">
+                    <button id="send-button" class="btn btn-primary" type="button">Send Message</button>
+                  </div>
+                </div>
+              
+    </div>
+
+  
+   
+
+
+    <script>
+        class chat_control {
+            constructor() {
+                this.msg_list = $('.msg-group');
+            }
+
+            publish_msg(name, msg) {
+                this.msg_list.append(this.get_msg_html(name, msg, 'right'));
+                this.scroll_to_bottom(); 
+            }
+
+            receive_msg(name, msg) {
+                this.msg_list.append(this.get_msg_html(name, msg, 'left'));
+                this.scroll_to_bottom(); 
+            }
+
+            get_msg_html(name, msg, side) {
+                var msg_temple = `
+                    <div class="card">
+                         <div class="card-body">
+                             <h6 class="card-subtitle mb-2 text-muted text-${side}">${name}</h6>
+                             <p class="card-text float-${side}">${msg}</p>
+                         </div>
+                    </div>
+                    `;
+                return msg_temple;
+            }
+
+            scroll_to_bottom() {
+                this.msg_list.scrollTop(this.msg_list[0].scrollHeight);
+            }
+        }
+
+
+        var chat = new chat_control();
+        
+
+        send_button = $('#send-button') // get jquery element from html table name
+        input_box = $('#input-box') // get jquery element from div id
+        // also you could get it by $('.form-control') or $('textarea')
+
+        function StartPN() {
+            pubnub = new PubNub({
+                publishKey : 'demo',
+                subscribeKey : 'demo'
+            })
+               
+            pubnub.addListener({
+                status: function(statusEvent) {
+                    if (statusEvent.category === "PNConnectedCategory") {
+                        chat.receive_msg('Server', "You're connected to the chat!");
+                    }
+                },
+                message: function(msg) {
+                    if (msg.channel == pubnub.getUUID()) {
+                        chat.publish_msg('You', msg.message);
+                    } else {
+                        chat.receive_msg('Guest', msg.message);
+                    }
+                },
+            })      
+
+            pubnub.subscribe({
+                channels: [pubnub.getUUID()] 
+            });
+            function handle_msg(msg) {
+                msg = msg.trim()
+                msg = msg.replace(/(?:\r\n|\r|\n)/g, '<br>')
+                return msg
+            }
+
+            function publish_msg() {
+                msg = handle_msg(input_box.val());
+                if (msg != '') {
+                    var publishConfig = {
+                        channel : pubnub.getUUID(),
+                        message: msg
+                    }
+                    pubnub.publish(publishConfig, function(status, response) {
+                        //console.log(status, response);
+                    })
+                    input_box.val('');
+                }
+            }
+
+            function textbox_keypress() {
+                // Enter was pressed
+                if (event.keyCode === 10 || event.keyCode === 13) {
+                    publish_msg();
+                }
+                // Esc was pressed
+                if (event.keyCode === 27) {
+                    input_box.blur();
+                }
+            }
+
+            send_button.on('click', publish_msg.bind());
+            input_box.on('keyup', textbox_keypress.bind());
+        };
+        StartPN();
+
+    </script>
+
+  </body>
+</html>
+
