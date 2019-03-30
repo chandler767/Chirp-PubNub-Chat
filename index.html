@@ -102,11 +102,11 @@
         Chirp({
             key: '847AE335BabB1EFDB9Ca0507c',
             onReceived: data => {
-                if (data.length > 0) {
+                if (data.length > 0 && channel == "") {
                     console.log(toAscii(data))
-                }
-                  channel = toAscii(data);
-                  StartChat();
+                    channel = toAscii(data);
+                    StartChat();
+                }   
             }
         })
         .then(_sdk => {
