@@ -130,6 +130,7 @@
         host_button = $('#host-button')
         chirp_button = $('#chirp-button')
         function StartChat() {
+            host_button.off('click', StartChat.bind());
             pubnub = new PubNub({
                 publishKey : 'demo',
                 subscribeKey : 'demo'
