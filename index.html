@@ -139,7 +139,7 @@
                 status: function(statusEvent) {
                     if (statusEvent.category === "PNConnectedCategory") {
                         $('#welcomeModal').modal('hide');
-                        chat.receiveMessage('Server', "You're connected to the chat!");
+                        chat.receiveMessage('Welcome', "You're connected to the chat! Press 'Chirp' to share your chat with a nearby device.");
                     }
                 },
                 message: function(msg) {
