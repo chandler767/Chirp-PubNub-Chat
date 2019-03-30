@@ -4,26 +4,17 @@
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
 <script src="https://cdn.pubnub.com/sdk/javascript/pubnub.4.23.0.js"></script>
 <script src="chirp-connect.js"></script>
-<!------ Include the above in your HEAD tag ---------->
-
 
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <!-- Required meta tags -->
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <link rel="icon" 
-      type="image/png" 
-      href="icon.png">
-
-    <!-- Bootstrap CSS -->
-    
+    <link rel="icon" type="image/png" href="icon.png">
   </head>
 
   <style>
     .center {
-        /* this will keep the content center */
         position: absolute;
         right: 0;
         left: 0;
@@ -34,11 +25,11 @@
     	position: absolute;
         max-width: 720px;
         height: 92%;
-        overflow-y: scroll;  /*if the content beyond width and height, use the scrollbar*/
+        overflow-y: scroll;
     }
 
     .card {
-        padding: 10px 0 10px 0;
+        padding: 8px 0 8px 0;
     }
 
     .input-group {
@@ -47,17 +38,13 @@
     	bottom: 0;
     }
 
-    
     textarea {
         resize: none;
     }
   </style>
 
   <body>
-
     <div>
-
-        <!-- Modal -->
         <div class="modal" id="welcomeModal" tabindex="-1" role="dialog">
           <div class="modal-dialog modal-dialog-centered" role="document">
             <div class="modal-content">
@@ -73,11 +60,8 @@
             </div>
           </div>
         </div>
-        	
         <div class="msg-group center">                 
-           
         </div>
-
         <div class="input-group mb-3">
             <div class="input-group-prepend">
                 <button id="chirp-button" class="btn btn-secondary" type="button">Chirp</button>
@@ -87,17 +71,15 @@
                 <button id="send-button" class="btn btn-primary" type="button">Send Message</button>
             </div>
         </div>
-              
     </div>
 
     <script>
-
+        $('#welcomeModal').modal('show');
+        
         const { Chirp, toAscii } = ChirpConnectSDK
         const key = '847AE335BabB1EFDB9Ca0507c'
         let sdk
         var channel = "";
-
-        $('#welcomeModal').modal('show');
 
         Chirp({
             key: '847AE335BabB1EFDB9Ca0507c',
@@ -113,23 +95,19 @@
             sdk = _sdk
         })
         .catch(console.warn)
-
         class chat_control {
             constructor() {
                 this.msg_list = $('.msg-group');
             }
-
-            publish_msg(name, msg) {
-                this.msg_list.append(this.get_msg_html(name, msg, 'right'));
+            publishMessage(name, msg) {
+                this.msg_list.append(this.msg_html(name, msg, 'right'));
                 this.scroll_to_bottom(); 
             }
-
-            receive_msg(name, msg) {
-                this.msg_list.append(this.get_msg_html(name, msg, 'left'));
+            receiveMessage(name, msg) {
+                this.msg_list.append(this.msg_html(name, msg, 'left'));
                 this.scroll_to_bottom(); 
             }
-
-            get_msg_html(name, msg, side) {
+            msg_html(name, msg, side) {
                 var msg_temple = `
                     <div class="card">
                          <div class="card-body">
@@ -140,46 +118,40 @@
                     `;
                 return msg_temple;
             }
-
             scroll_to_bottom() {
                 this.msg_list.scrollTop(this.msg_list[0].scrollHeight);
             }
         }
 
         var chat = new chat_control();
-        
         send_button = $('#send-button')
         input_box = $('#input-box')
         host_button = $('#host-button')
         chirp_button = $('#chirp-button')
 
         function StartChat() {
-
             pubnub = new PubNub({
                 publishKey : 'demo',
                 subscribeKey : 'demo'
             })
-
             if (channel == "") {
                 channel = pubnub.getUUID().slice(-10);
-            }
-               
+            }  
             pubnub.addListener({
                 status: function(statusEvent) {
                     if (statusEvent.category === "PNConnectedCategory") {
                         $('#welcomeModal').modal('hide');
-                        chat.receive_msg('Server', "You're connected to the chat!");
+                        chat.receiveMessage('Server', "You're connected to the chat!");
                     }
                 },
                 message: function(msg) {
                     if (msg.channel == pubnub.getUUID().slice(-10)) {
-                        chat.publish_msg('You', msg.message);
+                        chat.publishMessage('You', msg.message);
                     } else {
-                        chat.receive_msg('Guest', msg.message);
+                        chat.receiveMessage('Guest', msg.message);
                     }
                 },
             })      
-
             pubnub.subscribe({
                 channels: [channel] 
             });
@@ -188,7 +160,6 @@
                 msg = msg.replace(/(?:\r\n|\r|\n)/g, '<br>')
                 return msg
             }
-
             function publishMessage() {
                 msg = handleMessage(input_box.val());
                 if (msg != '') {
@@ -202,36 +173,27 @@
                     input_box.val('');
                 }
             }
-
             function textboxKeypress() {
-                // Enter was pressed
                 if (event.keyCode == 13) {
                     if (!event.shiftKey) {
                         publishMessage();
                     } 
                 }
 
-                // Esc was pressed
                 if (event.keyCode === 27) {
                     input_box.blur();
                 }
             }
-
             function chripSend() {
                 const payload = new TextEncoder('utf-8').encode(channel);
                 sdk.send(payload);
             }
-
             send_button.on('click', publishMessage.bind());
             input_box.on('keyup', textboxKeypress.bind());
             chirp_button.on('click', chripSend.bind());
 
         };
-
         host_button.on('click', StartChat.bind());
-
     </script>
-
   </body>
 </html>
-
