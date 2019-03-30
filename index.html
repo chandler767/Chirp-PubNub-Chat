@@ -3,7 +3,9 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
 <script src="https://cdn.pubnub.com/sdk/javascript/pubnub.4.23.0.js"></script>
+<script src="chirp-connect.js"></script>
 <!------ Include the above in your HEAD tag ---------->
+
 
 <!DOCTYPE html>
 <html lang="en">
@@ -11,6 +13,9 @@
     <!-- Required meta tags -->
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link rel="icon" 
+      type="image/png" 
+      href="icon.png">
 
     <!-- Bootstrap CSS -->
     
@@ -42,9 +47,7 @@
     	bottom: 0;
     }
 
-    .btn {
-        height:100%;
-    }
+    
     textarea {
         resize: none;
     }
@@ -52,31 +55,65 @@
 
   <body>
 
-    <div class="container-flude">
-    	
-                <div class="msg-group center">                 
-                   
-                </div>
-                
-     
+    <div>
 
-               <div class="input-group mb-3">
-                  <div class="input-group-prepend">
-                    <button class="btn btn-secondary" type="button">Chirp</button>
-                  </div>
-                    <textarea id="input-box" class="form-control" rows="1" placeholder="Say something..."></textarea>
-                  <div class="input-group-append">
-                    <button id="send-button" class="btn btn-primary" type="button">Send Message</button>
-                  </div>
-                </div>
+        <!-- Modal -->
+        <div class="modal" id="welcomeModal" tabindex="-1" role="dialog">
+          <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title">Waiting for chirp...</h5>
+              </div>
+              <div class="modal-body">
+                Existing chat will be joined when a chirp is detected or you can host the chat.
+              </div>
+              <div class="modal-footer">
+                <button id="host-button" type="button" class="btn btn-primary">Start & Host Chat</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        	
+        <div class="msg-group center">                 
+           
+        </div>
+
+        <div class="input-group mb-3">
+            <div class="input-group-prepend">
+                <button id="chirp-button" class="btn btn-secondary" type="button">Chirp</button>
+            </div>
+            <textarea id="input-box" class="form-control" rows="1"></textarea>
+            <div class="input-group-append">
+                <button id="send-button" class="btn btn-primary" type="button">Send Message</button>
+            </div>
+        </div>
               
     </div>
 
-  
-   
-
-
     <script>
+
+        const { Chirp, toAscii } = ChirpConnectSDK
+        const key = '847AE335BabB1EFDB9Ca0507c'
+        let sdk
+        var channel = "";
+
+        $('#welcomeModal').modal('show');
+
+        Chirp({
+            key: '847AE335BabB1EFDB9Ca0507c',
+            onReceived: data => {
+                if (data.length > 0) {
+                    console.log(toAscii(data))
+                }
+                  channel = toAscii(data);
+                  StartChat();
+            }
+        })
+        .then(_sdk => {
+            sdk = _sdk
+        })
+        .catch(console.warn)
+
         class chat_control {
             constructor() {
                 this.msg_list = $('.msg-group');
@@ -109,28 +146,33 @@
             }
         }
 
-
         var chat = new chat_control();
         
+        send_button = $('#send-button')
+        input_box = $('#input-box')
+        host_button = $('#host-button')
+        chirp_button = $('#chirp-button')
 
-        send_button = $('#send-button') // get jquery element from html table name
-        input_box = $('#input-box') // get jquery element from div id
-        // also you could get it by $('.form-control') or $('textarea')
+        function StartChat() {
 
-        function StartPN() {
             pubnub = new PubNub({
                 publishKey : 'demo',
                 subscribeKey : 'demo'
             })
+
+            if (channel == "") {
+                channel = pubnub.getUUID().slice(-10);
+            }
                
             pubnub.addListener({
                 status: function(statusEvent) {
                     if (statusEvent.category === "PNConnectedCategory") {
+                        $('#welcomeModal').modal('hide');
                         chat.receive_msg('Server', "You're connected to the chat!");
                     }
                 },
                 message: function(msg) {
-                    if (msg.channel == pubnub.getUUID()) {
+                    if (msg.channel == pubnub.getUUID().slice(-10)) {
                         chat.publish_msg('You', msg.message);
                     } else {
                         chat.receive_msg('Guest', msg.message);
@@ -139,19 +181,19 @@
             })      
 
             pubnub.subscribe({
-                channels: [pubnub.getUUID()] 
+                channels: [channel] 
             });
-            function handle_msg(msg) {
+            function handleMessage(msg) {
                 msg = msg.trim()
                 msg = msg.replace(/(?:\r\n|\r|\n)/g, '<br>')
                 return msg
             }
 
-            function publish_msg() {
-                msg = handle_msg(input_box.val());
+            function publishMessage() {
+                msg = handleMessage(input_box.val());
                 if (msg != '') {
                     var publishConfig = {
-                        channel : pubnub.getUUID(),
+                        channel: channel,
                         message: msg
                     }
                     pubnub.publish(publishConfig, function(status, response) {
@@ -161,21 +203,32 @@
                 }
             }
 
-            function textbox_keypress() {
+            function textboxKeypress() {
                 // Enter was pressed
-                if (event.keyCode === 10 || event.keyCode === 13) {
-                    publish_msg();
+                if (event.keyCode == 13) {
+                    if (!event.shiftKey) {
+                        publishMessage();
+                    } 
                 }
+
                 // Esc was pressed
                 if (event.keyCode === 27) {
                     input_box.blur();
                 }
             }
 
-            send_button.on('click', publish_msg.bind());
-            input_box.on('keyup', textbox_keypress.bind());
+            function chripSend() {
+                const payload = new TextEncoder('utf-8').encode(channel);
+                sdk.send(payload);
+            }
+
+            send_button.on('click', publishMessage.bind());
+            input_box.on('keyup', textboxKeypress.bind());
+            chirp_button.on('click', chripSend.bind());
+
         };
-        StartPN();
+
+        host_button.on('click', StartChat.bind());
 
     </script>
 
