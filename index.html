@@ -145,7 +145,7 @@
                     }
                 },
                 message: function(msg) {
-                    if (msg.channel == pubnub.getUUID().slice(-10)) {
+                    if (msg.publisher == pubnub.getUUID()) {
                         chat.publishMessage('You', msg.message);
                     } else {
                         chat.receiveMessage('Guest', msg.message);
@@ -173,25 +173,20 @@
                     input_box.val('');
                 }
             }
-            function textboxKeypress() {
-                if (event.keyCode == 13) {
-                    if (!event.shiftKey) {
-                        publishMessage();
-                    } 
-                }
-
-                if (event.keyCode === 27) {
-                    input_box.blur();
-                }
-            }
             function chripSend() {
                 const payload = new TextEncoder('utf-8').encode(channel);
                 sdk.send(payload);
             }
+            input_box.keyup(function (e) {
+                if(e.keyCode == 13 && !e.shiftKey) {
+                    publishMessage();
+                }
+                if (e.keyCode === 27) {
+                    input_box.blur();
+                }
+            });
             send_button.on('click', publishMessage.bind());
-            input_box.on('keyup', textboxKeypress.bind());
             chirp_button.on('click', chripSend.bind());
-
         };
         host_button.on('click', StartChat.bind());
     </script>
