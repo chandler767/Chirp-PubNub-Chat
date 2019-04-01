@@ -12,9 +12,11 @@ pubnub = new PubNub({
 msgList = $('.msg-group')
 inputBox = $('#input-box')
 sendButton = $('#send-button')
-join_button = $('#join-button')
-host_button = $('#host-button')
-chirp_button = $('#chirp-button')
+joinButton = $('#join-button')
+hostButton = $('#host-button')
+chirpButton = $('#chirp-button')
+newChatModal = $('#newChatModal')
+welcomeModal = $('#welcomeModal')
 
 class chat_control {
     publishMessage(name, msg) {
@@ -45,8 +47,8 @@ var chat = new chat_control();
 pubnub.addListener({
     status: function(statusEvent) {
         if (statusEvent.category === "PNConnectedCategory") {
-            $('#welcomeModal').modal('hide');
-            $('newChatModal').modal('hide');
+            welcomeModal.modal('hide');
+            newChatModal.modal('hide');
             chat.receiveMessage('Welcome', "You're connected to the chat! Press 'Chirp' to share your chat with a nearby device.");
         }
     },
@@ -96,7 +98,7 @@ Chirp({
                     channels: [channel]  
                 });
             } else if (channel != new_channel) {
-                $('#welcomeModal').modal('show');
+                newChatModal.modal('show');
             }
         }   
     }
@@ -112,7 +114,7 @@ function chripSend() {
         sdk.send(payload);
     }
 }
-chirp_button.on('click', chripSend.bind());  
+chirpButton.on('click', chripSend.bind());  
 
 function hostChat() {
     if (channel == "") {
@@ -122,7 +124,7 @@ function hostChat() {
         });
     }
 }
-host_button.on('click', hostChat.bind());
+hostButton.on('click', hostChat.bind());
 
 function joinChat() {
     if (channel != new_channel) {
@@ -134,6 +136,6 @@ function joinChat() {
         });
     }
 }
-join_button.on('click', joinChat.bind());
+joinButton.on('click', joinChat.bind());
 
-$('#welcomeModal').modal('show');
+welcomeModal.modal('show');
