@@ -59,7 +59,7 @@ pubnub.addListener({
     },
 })
 
- function publishMessage() {
+function publishMessage() {
     if (channel != "") {
         msg = inputBox.val().trim().replace(/(?:\r\n|\r|\n)/g, '<br>'); // Format message.
         if (msg != '') {
