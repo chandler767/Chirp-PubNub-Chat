@@ -82,6 +82,15 @@
         const key = '847AE335BabB1EFDB9Ca0507c'
         let sdk
         var channel = "";
+        var chat = new chat_control();
+        send_button = $('#send-button')
+        input_box = $('#input-box')
+        host_button = $('#host-button')
+        chirp_button = $('#chirp-button')
+        pubnub = new PubNub({
+            publishKey : 'demo',
+            subscribeKey : 'demo'
+        })
 
         Chirp({
             key: '847AE335BabB1EFDB9Ca0507c',
@@ -124,35 +133,28 @@
                 this.msg_list.scrollTop(this.msg_list[0].scrollHeight);
             }
         }
-        var chat = new chat_control();
-        send_button = $('#send-button')
-        input_box = $('#input-box')
-        host_button = $('#host-button')
-        chirp_button = $('#chirp-button')
+
+        pubnub.addListener({
+            status: function(statusEvent) {
+                if (statusEvent.category === "PNConnectedCategory") {
+                    $('#welcomeModal').modal('hide');
+                    chat.receiveMessage('Welcome', "You're connected to the chat! Press 'Chirp' to share your chat with a nearby device.");
+                }
+            },
+            message: function(msg) {
+                if (msg.publisher == pubnub.getUUID()) {
+                    chat.publishMessage('You', msg.message);
+                } else {
+                    chat.receiveMessage('Guest', msg.message);
+                }
+            },
+        })     
+        
         function StartChat() {
-            host_button.off('click', StartChat.bind());
-            pubnub = new PubNub({
-                publishKey : 'demo',
-                subscribeKey : 'demo'
-            })
+            host_button.off('click'); // Prevent the host button from being clicked multiple times. 
             if (channel == "") {
                 channel = pubnub.getUUID().slice(-10);
-            }  
-            pubnub.addListener({
-                status: function(statusEvent) {
-                    if (statusEvent.category === "PNConnectedCategory") {
-                        $('#welcomeModal').modal('hide');
-                        chat.receiveMessage('Welcome', "You're connected to the chat! Press 'Chirp' to share your chat with a nearby device.");
-                    }
-                },
-                message: function(msg) {
-                    if (msg.publisher == pubnub.getUUID()) {
-                        chat.publishMessage('You', msg.message);
-                    } else {
-                        chat.receiveMessage('Guest', msg.message);
-                    }
-                },
-            })      
+            }
             pubnub.subscribe({
                 channels: [channel] 
             });
