@@ -47,7 +47,7 @@ var chat = new chatControl();
 
 pubnub.addListener({
     status: function(statusEvent) {
-        if (statusEvent.category === "PNConnectedCategory") { // Hide modals and show melcome message.
+        if (statusEvent.category === "PNConnectedCategory") { // Hide modals and show welcome message.
             welcomeModal.modal('hide');
             newChatModal.modal('hide');
             chat.receiveMessage('Welcome', "You're connected to the chat! Press 'Chirp' to share your chat with a nearby device.");
@@ -55,7 +55,7 @@ pubnub.addListener({
     },
     message: function(msg) {
     	console.log(msg);
-        if (msg.publisher == pubnub.getUUID()) {
+        if (msg.publisher == pubnub.getUUID()) { // Check who sent the message.
             chat.publishMessage('You', msg.message);
         } else {
             chat.receiveMessage('Guest', msg.message);
@@ -97,7 +97,7 @@ Chirp({
             if (channel == "") { // First time connecting to chat. 
                 channel = new_channel;
                 pubnub.subscribe({
-                    channels: [channel]  
+                    channels: [channel]
                 });
             } else if (channel != new_channel) { // Ask if the user wants to connect to the new channel.
                 newChatModal.modal('show');
@@ -122,7 +122,7 @@ function hostChat() { // Join a chat with the last 8 characters of the users UUI
     if (channel == "") {
         channel = pubnub.getUUID().slice(-8);
         pubnub.subscribe({
-            channels: [channel]  
+            channels: [channel]
         });
     }
 };
@@ -130,7 +130,7 @@ hostButton.on('click', hostChat.bind());
 
 function joinChat() { // Join a channel that was detected from a chirp.
 	pubnub.unsubscribe({ // Unsubscribe from old channel.
-	    channels: [channel] 
+	    channels: [channel]
 	});
     channel = new_channel;
     inputBox.val('');
