@@ -138,4 +138,7 @@ function joinChat() {
 }
 joinButton.on('click', joinChat.bind());
 
-welcomeModal.modal('show');
+welcomeModal.modal({
+    backdrop: 'static',
+    keyboard: false  // to prevent closing with Esc button (if you want this too)
+})
