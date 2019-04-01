@@ -1,81 +1,83 @@
-const { Chirp, toAscii } = ChirpConnectSDK
-const key = '847AE335BabB1EFDB9Ca0507c'
-let sdk
+const { Chirp, toAscii } = ChirpConnectSDK;
+const key = '847AE335BabB1EFDB9Ca0507c'; // Your key from Chirp.io
+let sdk;
 
-var new_channel = ""
-var channel = "";
-pubnub = new PubNub({
+var new_channel = ""; // Stores new channel names when detected with Chirp.
+var channel = ""; // Stores current chat channel.
+
+pubnub = new PubNub({ // Your PubNub keys here. Get them from https://dashboard.pubnub.com.
     publishKey : 'demo',
     subscribeKey : 'demo'
-})
+});
 
-msgList = $('.msg-group')
-inputBox = $('#input-box')
-sendButton = $('#send-button')
-joinButton = $('#join-button')
-hostButton = $('#host-button')
-chirpButton = $('#chirp-button')
-newChatModal = $('#newChatModal')
-welcomeModal = $('#welcomeModal')
+msgList = $('.msg-group');
+inputBox = $('#input-box');
+sendButton = $('#send-button');
+joinButton = $('#join-button');
+hostButton = $('#host-button');
+chirpButton = $('#chirp-button'); // Button to play chip sound for current channel.
+welcomeModal = $('#welcomeModal'); // Modal for connection instructions.
+newChatModal = $('#newChatModal'); // Modal for when a new channel is detected.
 
-class chat_control {
+class chatControl { // Formats messages.
     publishMessage(name, msg) {
         msgList.append(this.msg_html(name, msg, 'right'));
-        this.scroll_to_bottom(); 
+        this.scrollToBottom(); 
     }
     receiveMessage(name, msg) {
         msgList.append(this.msg_html(name, msg, 'left'));
-        this.scroll_to_bottom(); 
+        this.scrollToBottom(); 
     }
     msg_html(name, msg, side) {
-        var msg_tmpl = `
+        var msgTemp = `
             <div class="card">
                  <div class="card-body">
-                     <h6 class="card-subtitle mb-2 text-muted text-${side}">${name}</h6>
+                     <h6 class="card-subtitle mb-2 text-${side}">${name}</h6>
                      <p class="card-text float-${side}">${msg}</p>
                  </div>
             </div>
             `;
-        return msg_tmpl;
+        return msgTemp;
     }
-    scroll_to_bottom() {
+    scrollToBottom() {
         msgList.scrollTop(msgList[0].scrollHeight);
     }
 }
-var chat = new chat_control();
+var chat = new chatControl();
 
 pubnub.addListener({
     status: function(statusEvent) {
-        if (statusEvent.category === "PNConnectedCategory") {
+        if (statusEvent.category === "PNConnectedCategory") { // Hide modals and show melcome message.
             welcomeModal.modal('hide');
             newChatModal.modal('hide');
             chat.receiveMessage('Welcome', "You're connected to the chat! Press 'Chirp' to share your chat with a nearby device.");
         }
     },
     message: function(msg) {
+    	console.log(msg);
         if (msg.publisher == pubnub.getUUID()) {
             chat.publishMessage('You', msg.message);
         } else {
             chat.receiveMessage('Guest', msg.message);
         }
     },
-})
+});
 
-function publishMessage() {
+function publishMessage() { // Send messages with PubNub.
     if (channel != "") {
         msg = inputBox.val().trim().replace(/(?:\r\n|\r|\n)/g, '<br>'); // Format message.
         if (msg != '') {
             var publishConfig = {
                 channel: channel,
                 message: msg
-            }
+            };
             pubnub.publish(publishConfig, function(status, response) {
                 console.log(status, response);
-            })
+            });
             inputBox.val('');
         }
     }
-}
+};
 sendButton.on('click', publishMessage.bind());
 inputBox.keyup(function (e) {
     if(e.keyCode == 13 && !e.shiftKey) {
@@ -91,54 +93,55 @@ Chirp({
     onReceived: data => {
         if (data.length > 0) {
             new_channel = toAscii(data);
-            //console.log(toAscii(new_channel));
-            if (channel == "") { // First time commecting to chat. 
+            console.log("Channel detected: "+toAscii(new_channel));
+            if (channel == "") { // First time connecting to chat. 
                 channel = new_channel;
                 pubnub.subscribe({
                     channels: [channel]  
                 });
-            } else if (channel != new_channel) {
+            } else if (channel != new_channel) { // Ask if the user wants to connect to the new channel.
                 newChatModal.modal('show');
             }
         }   
     }
 })
 .then(_sdk => {
-    sdk = _sdk
+    sdk = _sdk;
 })
-.catch(console.warn)
+.catch(console.warn);
 
-function chripSend() {
+function chripSend() { // Chirp current channel name.
     if (channel != "") {
         const payload = new TextEncoder('utf-8').encode(channel);
         sdk.send(payload);
     }
-}
+};
 chirpButton.on('click', chripSend.bind());  
 
-function hostChat() {
+function hostChat() { // Join a chat with the last 8 characters of the users UUID as the channel name.
     if (channel == "") {
-        channel = pubnub.getUUID().slice(-10);
+        channel = pubnub.getUUID().slice(-8);
         pubnub.subscribe({
             channels: [channel]  
         });
     }
-}
+};
 hostButton.on('click', hostChat.bind());
 
-function joinChat() {
-    if (channel != new_channel) {
-        channel = new_channel;
-        inputBox.val('');
-        msgList.html('');
-        pubnub.subscribe({
-            channels: [channel]  
-        });
-    }
-}
+function joinChat() { // Join a channel that was detected from a chirp.
+	pubnub.unsubscribe({ // Unsubscribe from old channel.
+	    channels: [channel] 
+	});
+    channel = new_channel;
+    inputBox.val('');
+    msgList.html(''); // Clear messages from old channel.
+    pubnub.subscribe({
+        channels: [channel] // Join new channel.
+    });
+};
 joinButton.on('click', joinChat.bind());
 
-welcomeModal.modal({
+welcomeModal.modal({ // Show welcome modal.
     backdrop: 'static',
-    keyboard: false  // to prevent closing with Esc button (if you want this too)
-})
+    keyboard: false
+});
