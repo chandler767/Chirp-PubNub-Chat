@@ -1,7 +1,7 @@
 .center {
     position: absolute;
-    right: 0;
-    left: 0;
+    right: 0px;
+    left: 0px;
     margin: auto;
 }
 
@@ -13,13 +13,13 @@
 }
 
 .card {
-    padding: 8px 0 8px 0;
+    padding: 8px 0px 8px 0px;
 }
 
 .input-group {
 	position: absolute;
     height: 10%;
-	bottom: 0;
+	bottom: 0px;
 }
 
 textarea {

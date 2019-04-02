@@ -1,6 +1,6 @@
 const { Chirp, toAscii } = ChirpConnectSDK;
 const key = '847AE335BabB1EFDB9Ca0507c'; // Your key from Chirp.io
-let sdk;
+var sdk;
 
 var new_channel = ""; // Stores new channel names when detected with Chirp.
 var channel = ""; // Stores current chat channel.
@@ -21,16 +21,16 @@ newChatModal = $('#newChatModal'); // Modal for when a new channel is detected.
 
 class chatControl { // Formats messages.
     publishMessage(name, msg) {
-        msgList.append(this.msg_html(name, msg, 'right'));
+        msgList.append(this.msg_html(name, msg, 'right', 'primary'));
         this.scrollToBottom(); 
     }
     receiveMessage(name, msg) {
-        msgList.append(this.msg_html(name, msg, 'left'));
+        msgList.append(this.msg_html(name, msg, 'left', 'secondary'));
         this.scrollToBottom(); 
     }
-    msg_html(name, msg, side) {
+    msg_html(name, msg, side, style) {
         var msgTemp = `
-            <div class="card">
+            <div class="card text-white bg-${style}">
                  <div class="card-body">
                      <h6 class="card-subtitle mb-2 text-${side}">${name}</h6>
                      <p class="card-text float-${side}">${msg}</p>
