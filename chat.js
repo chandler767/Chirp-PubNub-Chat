@@ -1,8 +1,8 @@
 const { Chirp, toAscii } = ChirpConnectSDK;
-const key = '847AE335BabB1EFDB9Ca0507c'; // Your key from Chirp.io
+const key = '847AE335BabB1EFDB9Ca0507c'; // Your key from Chirp.io.
 var sdk;
 
-var new_channel = ""; // Stores new channel names when detected with Chirp.
+var newChannel = ""; // Stores new channel names when detected with Chirp.
 var channel = ""; // Stores current chat channel.
 
 pubnub = new PubNub({ // Your PubNub keys here. Get them from https://dashboard.pubnub.com.
@@ -21,14 +21,14 @@ newChatModal = $('#newChatModal'); // Modal for when a new channel is detected.
 
 class chatControl { // Formats messages.
     publishMessage(name, msg) {
-        msgList.append(this.msg_html(name, msg, 'right', 'primary'));
+        msgList.append(this.msg(name, msg, 'right', 'primary'));
         this.scrollToBottom(); 
     }
     receiveMessage(name, msg) {
-        msgList.append(this.msg_html(name, msg, 'left', 'secondary'));
+        msgList.append(this.msg(name, msg, 'left', 'secondary'));
         this.scrollToBottom(); 
     }
-    msg_html(name, msg, side, style) {
+    msg(name, msg, side, style) {
         var msgTemp = `
             <div class="card text-white bg-${style}">
                  <div class="card-body">
@@ -64,18 +64,16 @@ pubnub.addListener({
 });
 
 function publishMessage() { // Send messages with PubNub.
-    if (channel != "") {
-        msg = inputBox.val().trim().replace(/(?:\r\n|\r|\n)/g, '<br>'); // Format message.
-        if (msg != '') {
-            var publishConfig = {
-                channel: channel,
-                message: msg
-            };
-            pubnub.publish(publishConfig, function(status, response) {
-                console.log(status, response);
-            });
-            inputBox.val('');
-        }
+	var msg = inputBox.val().trim().replace(/(?:\r\n|\r|\n)/g, '<br>'); // Format message.
+	inputBox.val('');
+    if (msg != '') {
+        var publishConfig = {
+            channel: channel,
+            message: msg
+        };
+        pubnub.publish(publishConfig, function(status, response) { // Publish message to current channel.
+            console.log(status, response);
+        });
     }
 };
 sendButton.on('click', publishMessage.bind());
@@ -92,14 +90,14 @@ Chirp({
     key: key,
     onReceived: data => {
         if (data.length > 0) {
-            new_channel = toAscii(data);
-            console.log("Channel detected: "+toAscii(new_channel));
+            newChannel = toAscii(data);
+            console.log("Channel detected: "+toAscii(newChannel));
             if (channel == "") { // First time connecting to chat. 
-                channel = new_channel;
+                channel = newChannel;
                 pubnub.subscribe({
                     channels: [channel]
                 });
-            } else if (channel != new_channel) { // Ask if the user wants to connect to the new channel.
+            } else if (channel != newChannel) { // Ask if the user wants to connect to the new channel.
                 newChatModal.modal('show');
             }
         }   
@@ -132,7 +130,7 @@ function joinChat() { // Join a channel that was detected from a chirp.
 	pubnub.unsubscribe({ // Unsubscribe from old channel.
 	    channels: [channel]
 	});
-    channel = new_channel;
+    channel = newChannel; // Switch to new channel.
     inputBox.val('');
     msgList.html(''); // Clear messages from old channel.
     pubnub.subscribe({
