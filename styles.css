@@ -6,7 +6,7 @@
 }
 
 .msg-group {
-	position: absolute;
+    position: absolute;
     max-width: 700px;
     height: 90%;
     overflow-y: scroll;
@@ -17,9 +17,9 @@
 }
 
 .input-group {
-	position: absolute;
+    position: absolute;
     height: 10%;
-	bottom: 0px;
+    bottom: 0px;
 }
 
 textarea {
