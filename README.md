@@ -2,7 +2,7 @@
 
 This project is a demo chat application that uses audible chirps to connect users to the same channel using the [Chirp WebAssembly SDK](https://developers.chirp.io/docs/getting-started/wasm) and [PubNub Javascript SDK](https://www.pubnub.com/docs/web-javascript/pubnub-javascript-sdk?devrel_gh=Chirp-PubNub-Chat).
 
-<img class="aligncenter" src="https://www.pubnub.com/blog/wp-content/uploads/2019/04/chirp-chat.gif" alt="Use Chirp to connect users to the same chat." width="600" />
+<a href="https://www.pubnub.com/blog/how-to-send-chat-invites-using-chirp/?devrel_gh=Chirp-PubNub-Chat"><img class="aligncenter" src="https://www.pubnub.com/blog/wp-content/uploads/2019/04/chirp-chat.gif" alt="Use Chirp to connect users to the same chat." width="600" /></a>
 
 Using Chirp you can eliminate the need to users to manually enter the channel they want to join. The users only need to enable microphone access and turn up their speaker to connect to each other. Chirp is a great alternative to QR codes.
 
