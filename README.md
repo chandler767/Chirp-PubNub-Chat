@@ -36,7 +36,7 @@ Although Chirp sends data completely offline, registration credentials are neede
 
 You must host the files using a server. I recommend <a href="https://www.npmjs.com/package/http-server" target="_blank" rel="noopener noreferrer">http-server</a>.
 
-Install with NPM:
+<a href="https://www.npmjs.com/get-npm" target="_blank" rel="noopener">Install with NPM</a>:
 
 <code>npm install http-server -g</code>
 
@@ -46,6 +46,6 @@ Start the server from the same directory as your project files:
 
 Add your origin to the <a href="https://developers.chirp.io/applications" target="_blank" rel="noopener">origins pane of your application</a>.
 
-<img src="https://www.pubnub.com/blog/wp-content/uploads/2019/04/Screen-Shot-2019-04-15-at-3.24.29-PM.png" alt="Chirp applications config" width="419" height="219" />
+<a href="https://developers.chirp.io/applications" target="_blank" rel="noopener"><img src="https://www.pubnub.com/blog/wp-content/uploads/2019/04/Screen-Shot-2019-04-15-at-3.24.29-PM.png" alt="Chirp applications config" width="419" height="219" /></a>
 
 <strong>Visit <a href="http://localhost:8080" target="_blank" rel="noopener">http://localhost:8080</a> to view and test your chat application powered by Chirp and PubNub.</strong>
