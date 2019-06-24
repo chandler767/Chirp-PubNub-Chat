@@ -32,9 +32,9 @@ Replace "YOUR_CHIRP_KEY_HERE" with your Chirp key from the <a href="https://deve
 Although Chirp sends data completely offline, registration credentials are needed to identify your user account to the SDK, and to configure the SDK with your profile-specific features.
 <p class="paragraph paragraph--margin-bottom ">For web-based applications using the Chirp JavaScript or WebAssembly SDKs, applications are identified using your application key, and must be hosted on one of the web origins that you specify in the <a href="https://developers.chirp.io/applications">origins pane of your application</a>.</p>
 
-<strong>CORS rules won’t allow the browser to load the <a href="https://developers.chirp.io/docs/getting-started/wasm" target="_blank" rel="noopener noreferrer">Chirp WebAssembly SDK</a> directly from the file system.</strong>
+<strong>Important Note:</strong> CORS rules won’t allow the browser to load the <a href="https://developers.chirp.io/docs/getting-started/wasm" target="_blank" rel="noopener noreferrer">Chirp WebAssembly SDK</a> directly from the file system.
 
-You must host the files using a server. I recommend <a href="https://www.npmjs.com/package/http-server" target="_blank" rel="noopener noreferrer">http-server</a>.
+You must host the files using a server. I recommend <a href="https://www.npmjs.com/package/http-server" target="_blank" rel="noopener noreferrer">http-server</a> to test locally.
 
 <a href="https://www.npmjs.com/get-npm" target="_blank" rel="noopener">Install with NPM</a>:
 
